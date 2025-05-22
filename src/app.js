@@ -1,32 +1,19 @@
-//Route and request handling.
-
-//Always remember the order of route matters a lot.
-//always declare route using HTTP methods.
-const express = require("express");
+const express  = require("express");
 
 const app = express();
+// you can add these route handlers in array , they will work in same way.
+app.get("/user",(req,res,next) =>{ //pls remember these 3 parameters while writing multiple route handlers
+    console.log("Handling response 1")
+     res.send("1st response") // agr hum is line ko comment krte h to hum dekhenge ki wo next function ko call krega 
+     //yani ki dusre route handler ko (cause of next()), or response me niche wala de dega route handler ka response 
+     // or agr kuch bhi comment out nhi h to phla wala response hi show krega or sath me error aaega kyunki response 
+     // is already fulfilled .
+    next()
+}, (req,res) =>{
+    console.log("Handling response 2")
+    res.send("2nd response")
+})
 
-//if u will use 'app.use' at the top then u will not be able to handle these HTTP methods properly.
-
-app.get("/user" , (req,res)=>{
-    res.send({firstName : "Devesh " , lastName: "Shukla"});
-});
-app.post("/user" , (req,res)=>{
-    res.send("Data sent successfully to the database");
-});
-app.delete("/user" , (req,res)=>{
-    res.send("User is deleted successfully");
-});
-
-app.listen(3000,(req,res)=>{
-    console.log("Server is listening to the port 3000");
-});
-//one more thing to understand, if u are declaring any route with app.use then for 
-//specific route say /hello , u have designed any specific response but if u will try to access 
-// '/hello/2' and have written this route and request after the previous one then u will not get the desired output.
-// so if u want to get the correct output then u have to declare it at the top or above that specific route.
-
-//let's talk a little about regex--
-// 1 -  /a/ - it states ki agr aapke route me last k word me agr'a' h to wo desired output de dega
-// 2 -  /? - agr ye laga hua h mtlb iske just phle ka letter optional h ex - ab?c to agr route me 'ac' likhenge to wo 
-// desired output de dega .. it won't say that route is not matching.
+app.listen(3000,(req,res) =>{
+    console.log("Server is running at the port 3000");
+})

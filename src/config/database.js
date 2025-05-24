@@ -8,4 +8,3 @@ const connectDB = async() =>{
 
 module.exports = connectDB;
 
-//devtinder1.hvulopz.mongodb.net

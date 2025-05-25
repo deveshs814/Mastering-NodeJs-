@@ -7,7 +7,7 @@ const userSchema = mongoose.Schema({
     lastName:{
         type: String
     },
-    emialId:{
+    emailId:{
         type: String
     },
     password:{

@@ -58,6 +58,16 @@ app.patch("/user",async(req,res) =>{
     const userId = req.body.userId;
     const data = req.body;
     try {
+        const ALLOWED_UPDATES = ["about","gender","age","skills"]; //this includes only those data sets in which we can change the values.
+        const isUpdateAllowed = Object.keys(data).every((k) =>
+            ALLOWED_UPDATES.includes(k)
+        )
+        if(!isUpdateAllowed){
+            throw new Error("Update not allowed")
+        }
+        if(data?.skills.length > 10){
+            throw new Error("Skills can't be more than 10")
+        }
         const user = await User.findByIdAndUpdate(userId,data);
         res.send("User updated!!")
     } catch (err) {

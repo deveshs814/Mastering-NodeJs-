@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema({
     firstName:{
@@ -15,7 +16,12 @@ const userSchema = new mongoose.Schema({
         lowercase:true,
         unique:true,
         trim:true,
-        required: true
+        required: true,
+        validate(value){
+            if(!validator.isEmail(value)){
+            throw new Error("Invalid Email address: " + value);
+        }
+        },
     },
     password:{
         type:String,
@@ -29,7 +35,7 @@ const userSchema = new mongoose.Schema({
         type:String,
         validate(value){ //validation is checked before the saving into db..will save only if validation is okay.
             if(!["male","female","others"].includes(value)){
-                throw new error("Gender is not valid");
+                throw new Error("Gender is not valid");
             }
         },
     },

@@ -19,7 +19,7 @@ app.post("/signup", async (req, res) => {
 
         // 3. Hash password
         const passwordHash = await bcrypt.hash(password, 10);
-        console.log(passwordHash);
+        // console.log(passwordHash);
 
         // 4. Create new user
         const user = new User({
@@ -46,7 +46,11 @@ app.post("/login", async (req, res) => {
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if(isPasswordValid){
-            res.cookie("token","gsfuigseuifghsdufhsiufhewsuf")
+
+            const token = await jwt.sign({_id:user._id},"DEV@Tinder@123") //the first parameter is something we hide and second is the Secret key that only the server knows
+            // you are hiding this in jwt token.
+            // console.log(token);
+            res.cookie("token",token)
             res.send("Login successfull!!")
         }else {
             throw new Error("Invalid credentials")
@@ -55,10 +59,28 @@ app.post("/login", async (req, res) => {
         res.status(400).send("Error: " + error.message);
     }
 });
+
+//when we login a cookie is passed it contains jwt token and then at the time of giving response to user for 
+//next operation or task it checks or verify if token is okay or correct.. otherwise it wont pass the data/response.
 app.get("/profile",async(req,res) =>{
+    try {
     const cookies  = req.cookies;
-    console.log(cookies);
-    res.send("Reading Cookie")
+    const {token} = cookies;
+        if(!token){
+            throw new Error("Invalid Token")
+        }
+    const decodedMessage = await jwt.verify(token,"DEV@Tinder@123");
+    const {_id} = decodedMessage;
+    // console.log("Logged in user is : " + _id);
+    const user = await User.findOne({_id});
+        if(!user){
+            throw new Error("User doesn't exists!!")
+        }
+
+    res.send(user);
+    } catch (error) {
+         res.status(400).send("Error: " + error.message);
+    }
 })
 
 app.get("/user", async(req,res) =>{
@@ -128,4 +150,4 @@ connectDB()
 })
 .catch((err) =>{
     console.log("Database cannot be connected!!")
-});
+}); 

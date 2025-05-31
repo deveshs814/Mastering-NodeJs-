@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 app.use(express.json());
 app.use(cookieParser());
+const {userAuth} = require("../src/middleware/auth.js");
 
 app.post("/signup", async (req, res) => {
     try {
@@ -47,10 +48,10 @@ app.post("/login", async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if(isPasswordValid){
 
-            const token = await jwt.sign({_id:user._id},"DEV@Tinder@123") //the first parameter is something we hide and second is the Secret key that only the server knows
+            const token = await jwt.sign({_id:user._id},"DEV@Tinder@123",{expiresIn:"7d"}) //the first parameter is something we hide and second is the Secret key that only the server knows
             // you are hiding this in jwt token.
             // console.log(token);
-            res.cookie("token",token)
+            res.cookie("token",token,{httpOnly:true});
             res.send("Login successfull!!")
         }else {
             throw new Error("Invalid credentials")
@@ -64,18 +65,7 @@ app.post("/login", async (req, res) => {
 //next operation or task it checks or verify if token is okay or correct.. otherwise it wont pass the data/response.
 app.get("/profile",async(req,res) =>{
     try {
-    const cookies  = req.cookies;
-    const {token} = cookies;
-        if(!token){
-            throw new Error("Invalid Token")
-        }
-    const decodedMessage = await jwt.verify(token,"DEV@Tinder@123");
-    const {_id} = decodedMessage;
-    // console.log("Logged in user is : " + _id);
-    const user = await User.findOne({_id});
-        if(!user){
-            throw new Error("User doesn't exists!!")
-        }
+    const user =  req.user
 
     res.send(user);
     } catch (error) {

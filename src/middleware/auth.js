@@ -11,7 +11,7 @@ const userAuth = async(req,res,next) =>{
       throw new Error("token isn't valid!")
    }
 
-   const decodedMsg = await jwt.verify("token","DEV@Tinder@123")
+   const decodedMsg = await jwt.verify(token, "DEV@Tinder@123");
    const {_id} = decodedMsg;
 
    const user = await User.findById(_id);
@@ -21,7 +21,7 @@ const userAuth = async(req,res,next) =>{
    req.user = user;
    next();
    } catch (err) {
-      res.status(400).send("Error : " , err.message)
+      res.status(400).send("Error : ", err.message)
    }
 };
 

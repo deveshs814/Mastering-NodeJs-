@@ -41,17 +41,15 @@ app.post("/login", async (req, res) => {
     try {
         const {emailId,password} = (req.body);
 
-        const user = await User.findOne({emailId:emailId});
+        const user = await User.findOne({emailId:emailId})
         if(!user){
             throw new Error("Invalid credentials")
         }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await user.validatePassword(password)
         if(isPasswordValid){
 
-            const token = await jwt.sign({_id:user._id},"DEV@Tinder@123",{expiresIn:"7d"}) //the first parameter is something we hide and second is the Secret key that only the server knows
-            // you are hiding this in jwt token.
-            // console.log(token);
-            res.cookie("token",token,{httpOnly:true});
+            const token = await user.getJWT();
+            res.cookie("token",token,{expires: new Date(Date.now() + 8 * 3600000)});
             res.send("Login successfull!!")
         }else {
             throw new Error("Invalid credentials")

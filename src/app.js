@@ -2,74 +2,21 @@ const express = require("express");
 const connectDB = require('./config/database.js');
 const User = require("./models/user.js");
 const app = express();
-const {validateSignupData} = require("./utils/validation.js");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
+const authRouter = require("../src/routes/auth.js");
+const profileRouter  = require("../src/routes/profile.js");
+const requestRouter = require("../src/routes/requests.js");
+
+
 app.use(express.json());
 app.use(cookieParser());
-const {userAuth} = require("../src/middleware/auth.js");
 
-app.post("/signup", async (req, res) => {
-    try {
-        // 1. Extract from request body
-        const { firstName, lastName, emailId, password } = req.body;
-
-        // 2. Validate request
-        validateSignupData(req);
-
-        // 3. Hash password
-        const passwordHash = await bcrypt.hash(password, 10);
-        // console.log(passwordHash);
-
-        // 4. Create new user
-        const user = new User({
-            firstName,
-            lastName,
-            emailId,
-            password: passwordHash
-        });
-
-        // 5. Save to DB
-        await user.save();
-        res.send("User Added Successfully!");
-    } catch (error) {
-        res.status(400).send("Error: " + error.message);
-    }
-});
-app.post("/login", async (req, res) => {
-    try {
-        const {emailId,password} = (req.body);
-
-        const user = await User.findOne({emailId:emailId})
-        if(!user){
-            throw new Error("Invalid credentials")
-        }
-        const isPasswordValid = await user.validatePassword(password)
-        if(isPasswordValid){
-
-            const token = await user.getJWT();
-            res.cookie("token",token,{expires: new Date(Date.now() + 8 * 3600000)});
-            res.send("Login successfull!!")
-        }else {
-            throw new Error("Invalid credentials")
-        }
-    } catch (error) {
-        res.status(400).send("Error: " + error.message);
-    }
-});
-
+app.use("/",authRouter);
+app.use("/",profileRouter);
+app.use("/",requestRouter);
 //when we login a cookie is passed it contains jwt token and then at the time of giving response to user for 
 //next operation or task it checks or verify if token is okay or correct.. otherwise it wont pass the data/response.
-app.get("/profile",async(req,res) =>{
-    try {
-    const user =  req.user
 
-    res.send(user);
-    } catch (error) {
-         res.status(400).send("Error: " + error.message);
-    }
-})
 
 app.get("/user", async(req,res) =>{
     const userEmail = req.body.emailId;

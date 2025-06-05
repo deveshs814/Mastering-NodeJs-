@@ -1,15 +1,14 @@
 const express = require("express");
 const authRouter = express.Router();
-const jwt = require("jsonwebtoken");
-const validateSignupData = require("../utils/validation.js");
 const bcrypt = require("bcrypt");
 const User = require("../models/user.js")
+const { validateSignupData, validateEditProfileData } = require("../utils/validation.js");
 
 
 authRouter.post("/signup", async (req, res) => {
     try {
         // 1. Extract from request body
-        const { firstName, lastName, emailId, password } = req.body;
+        const { firstName, lastName, emailId, password,skills,about } = req.body;
 
         // 2. Validate request
         validateSignupData(req);
@@ -23,7 +22,9 @@ authRouter.post("/signup", async (req, res) => {
             firstName,
             lastName,
             emailId,
-            password: passwordHash
+            password: passwordHash,
+            skills,
+            about
         });
 
         // 5. Save to DB

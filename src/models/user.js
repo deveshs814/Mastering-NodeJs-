@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
     firstName:{
         type: String,
         minLength:6,
+        index:true,
         maxLength:20,
         required: true
     },
@@ -51,6 +52,8 @@ const userSchema = new mongoose.Schema({
 },{
     timestamps:true, //this will give the created at and updated at.
 });
+
+// userSchema.index({firstName:1});
 
 userSchema.methods.getJWT = async function() {
     const user = this;

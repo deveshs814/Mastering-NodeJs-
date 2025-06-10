@@ -1,6 +1,6 @@
 const express = require("express");
 const userRouter = express.Router();
-
+const user = require("../models/user.js")
 const { userAuth } = require('../middleware/auth.js');
 const ConnectionRequest = require("../models/connectionRequest.js");
 
@@ -53,5 +53,33 @@ userRouter.get("/connections", userAuth, async (req, res) => {
         res.status(400).send({ message: error.message });
     }
 });
+
+userRouter.get("/feed",userAuth, async(req,res) =>{
+    try {
+        const loggedInUser = req.user;
+
+        const connectionRequests = await ConnectionRequest.find({
+            $or:[{fromUserId:loggedInUser._id},{toUserId:loggedInUser._id}],
+        }).select("fromUserId toUserId");
+
+        const hideUsersFromFeed = new Set();
+        connectionRequests.forEach((req) =>{
+            hideUsersFromFeed.add(req.fromUserId.toString());
+            hideUsersFromFeed.add(req.toUserId.toString());
+        });
+        console.log(hideUsersFromFeed);
+
+        const users = await User.find({
+            $and:[
+                {_id:{$nin:Array.from(hideUsersFromFeed)}},
+                {_id: {$ne:loggedInUser._id}},
+            ],
+        }).select(USER_DATA);
+
+        res.send(users);
+    } catch (error) {
+        res.status(400).json({message : error.message});
+    }
+})
 
 module.exports = userRouter;

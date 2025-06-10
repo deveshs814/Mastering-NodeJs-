@@ -3,7 +3,7 @@ const userRouter = express.Router();
 const user = require("../models/user.js")
 const { userAuth } = require('../middleware/auth.js');
 const ConnectionRequest = require("../models/connectionRequest.js");
-
+const mongoose = require("mongoose");
 const USER_DATA = "firstName lastName age gender about skills";
 
 // Route to get received connection requests
@@ -54,32 +54,55 @@ userRouter.get("/connections", userAuth, async (req, res) => {
     }
 });
 
-userRouter.get("/feed",userAuth, async(req,res) =>{
+userRouter.get("/feed", userAuth, async (req, res) => {
     try {
         const loggedInUser = req.user;
 
+        const page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 10;
+        limit = limit > 50 ? 50 : limit;
+
+        const skip = (page - 1) * limit;
+
+        // Step 1: Get connection requests involving the logged-in user
         const connectionRequests = await ConnectionRequest.find({
-            $or:[{fromUserId:loggedInUser._id},{toUserId:loggedInUser._id}],
+            $or: [
+                { fromUserId: loggedInUser._id },
+                { toUserId: loggedInUser._id }
+            ]
         }).select("fromUserId toUserId");
 
+        // Step 2: Build a Set of user IDs to hide (including self)
         const hideUsersFromFeed = new Set();
-        connectionRequests.forEach((req) =>{
+
+        connectionRequests.forEach((req) => {
             hideUsersFromFeed.add(req.fromUserId.toString());
             hideUsersFromFeed.add(req.toUserId.toString());
         });
-        console.log(hideUsersFromFeed);
 
+        // Always hide the logged-in user
+        hideUsersFromFeed.add(loggedInUser._id.toString());
+
+        // Step 3: Query only users NOT in hideUsersFromFeed
         const users = await User.find({
-            $and:[
-                {_id:{$nin:Array.from(hideUsersFromFeed)}},
-                {_id: {$ne:loggedInUser._id}},
-            ],
-        }).select(USER_DATA);
+            _id: {
+                $nin: Array.from(hideUsersFromFeed).map(id => new mongoose.Types.ObjectId(id))
+            }
+        })
+        .select(USER_DATA)
+        .skip(skip)
+        .limit(limit);
 
-        res.send(users);
+        res.status(200).json({
+            page,
+            limit,
+            count: users.length,
+            users
+        });
     } catch (error) {
-        res.status(400).json({message : error.message});
+        res.status(400).json({ message: error.message });
     }
-})
+});
+
 
 module.exports = userRouter;

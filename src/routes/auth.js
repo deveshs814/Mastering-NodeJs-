@@ -8,7 +8,7 @@ const { validateSignupData, validateEditProfileData } = require("../utils/valida
 authRouter.post("/signup", async (req, res) => {
     try {
         // 1. Extract from request body
-        const { firstName, lastName, emailId, password,skills,about } = req.body;
+        const { firstName, lastName, emailId, password,skills,photoUrl,about } = req.body;
 
         // 2. Validate request
         validateSignupData(req);
@@ -24,6 +24,7 @@ authRouter.post("/signup", async (req, res) => {
             emailId,
             password: passwordHash,
             skills,
+            photoUrl,
             about
         });
 

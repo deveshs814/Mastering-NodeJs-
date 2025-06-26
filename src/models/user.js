@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema({
     },
     gender:{
         type:String,
+        default: "female",
         validate(value){ //validation is checked before the saving into db..will save only if validation is okay.
             if(!["male","female","others"].includes(value)){
                 throw new Error("Gender is not valid");

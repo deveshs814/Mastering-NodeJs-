@@ -4,7 +4,8 @@ const user = require("../models/user.js")
 const { userAuth } = require('../middleware/auth.js');
 const ConnectionRequest = require("../models/connectionRequest.js");
 const mongoose = require("mongoose");
-const USER_DATA = "firstName lastName age gender about skills";
+const USER_DATA = "_id firstName lastName emailId photoUrl";
+
 
 // Route to get received connection requests
 userRouter.get("/requests/received", userAuth, async (req, res) => {

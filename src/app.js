@@ -9,8 +9,12 @@ const requestRouter = require("../src/routes/requests.js");
 const userRouter = require("../src/routes/user.js")
 const cors = require("cors");
 
+const allowedOrigins = [
+  "http://localhost:5173", // for local dev
+  "https://devtinder-frontend-2.onrender.com", // your frontend on Render
+];
 app.use(cors(
-    {origin:"http://localhost:5173",
+    {origin: allowedOrigins,
         credentials:true,
     }
 ))
